@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Carrera {
+  id_carrera     Int          @id @default(autoincrement())
+  nombre         String
+  facultad       String?
+  especialidadId Int?         // opcional
+  especialidad   Especialidad? @relation(fields: [especialidadId], references: [id_especialidad])
+  materias       Materia[]
+  ciclos         Ciclo[]
+  docentes       Docente[]    // docentes que dictan esta carrera
+  estudiantes    Estudiante[]
+}
+
+model Materia {
+  id_materia  Int      @id @default(autoincrement())
+  nombre      String
+  creditos    Int
+  carreraId   Int
+  carrera     Carrera  @relation(fields: [carreraId], references: [id_carrera])
+}
+
+model Ciclo {
+  id_ciclo    Int         @id @default(autoincrement())
+  nombre      String
+  numero      Int
+  carreraId   Int
+  carrera     Carrera     @relation(fields: [carreraId], references: [id_carrera])
+  estudiantes Estudiante[]
+}
+
+model Estudiante {
+  id_estudiante Int        @id @default(autoincrement())
+  nombre        String
+  apellido      String
+  email         String     @unique
+  cicloId       Int
+  carreraId     Int
+  ciclo         Ciclo      @relation(fields: [cicloId], references: [id_ciclo])
+  carrera       Carrera    @relation(fields: [carreraId], references: [id_carrera])
+}
+
+model Docente {
+  id_docente     Int           @id @default(autoincrement())
+  nombre         String
+  apellido       String
+  email          String         @unique
+  especialidadId Int?
+  carreraId      Int?
+  especialidad   Especialidad?  @relation(fields: [especialidadId], references: [id_especialidad])
+  carrera        Carrera?       @relation(fields: [carreraId], references: [id_carrera])
+}
+
+model Especialidad {
+  id_especialidad Int         @id @default(autoincrement())
+  nombre          String
+  docentes        Docente[]
+  carreras        Carrera[]
+}
+
